@@ -1,0 +1,909 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>The Dep Sessions — Song Selection</title>
+<style>
+  :root{
+    --bg-main: #0f0f0f;
+    --bg-card: #1a1a1a;
+    --bg-hover: #222222;
+    --accent: #f97316;
+    --accent-soft: rgba(249, 115, 22, 0.15);
+    --reserve: #8b5cf6;
+    --reserve-soft: rgba(139, 92, 246, 0.15);
+    --text-main: #f1f5f9;
+    --text-muted: #94a3b8;
+    --success: #10b981;
+    --warning: #f97316;
+    --carry: #8b5cf6;
+    --suggested: #eab308;
+    --border: #27272a;
+    --radius: 12px;
+    --btn-radius: 6px;
+    font-family: "Segoe UI", Roboto, -apple-system, sans-serif;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+  }
+
+  html,body{
+    height:100%;
+    background:var(--bg-main);
+    color:var(--text-main);
+    margin:0;
+    padding:0;
+  }
+
+  .wrap{
+    max-width:900px;
+    margin:20px auto;
+    padding:16px;
+  }
+
+  @media(min-width:720px){
+    .wrap{ padding:24px; }
+  }
+
+  header{
+    display:flex;
+    gap:16px;
+    align-items:flex-start;
+    margin-bottom:18px;
+  }
+
+  .title{
+    flex:1;
+  }
+  .title h1{
+    margin:0;
+    color:var(--accent);
+    font-size:1.6rem;
+    letter-spacing:0.2px;
+  }
+  .meta{
+    margin-top:6px;
+    color:var(--text-muted);
+    font-size:0.95rem;
+  }
+
+  .deadline{
+    background:linear-gradient(90deg, rgba(249,115,22,0.06), transparent);
+    border:1px solid rgba(249,115,22,0.12);
+    padding:10px;
+    border-radius:10px;
+    color:var(--text-main);
+    font-size:0.95rem;
+  }
+
+  .counters{
+    display:flex;
+    gap:8px;
+    margin-top:10px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+
+  .counter{
+    background:var(--bg-card);
+    border:1px solid var(--border);
+    padding:8px 12px;
+    border-radius:10px;
+    font-size:0.92rem;
+    color:var(--text-main);
+    display:flex;
+    gap:8px;
+    align-items:center;
+  }
+
+  .instruction{
+    margin:12px 0 18px 0;
+    color:var(--text-muted);
+    font-size:0.95rem;
+  }
+
+  main{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+
+  .song-card{
+    background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    overflow:hidden;
+    transition: box-shadow .18s ease, transform .12s ease;
+  }
+  .song-card:hover{ box-shadow:0 6px 18px rgba(0,0,0,0.6); transform:translateY(-2px); }
+
+  .song-header{
+    display:flex;
+    gap:12px;
+    align-items:center;
+    padding:14px;
+    cursor:pointer;
+    user-select:none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .song-header:active{ background:var(--bg-hover); }
+
+  .status-icon{
+    width:36px;
+    height:36px;
+    min-width:36px;
+    display:grid;
+    place-items:center;
+    font-size:18px;
+    border-radius:10px;
+    background:transparent;
+    color:var(--text-main);
+  }
+
+  .personal-marker{
+    font-size:12px;
+    background:linear-gradient(90deg, rgba(16,185,129,0.08), transparent);
+    padding:4px 8px;
+    border-radius:999px;
+    color:var(--success);
+    border:1px solid rgba(16,185,129,0.12);
+    margin-left:auto;
+    display:flex;
+    gap:8px;
+    align-items:center;
+  }
+
+  .song-meta{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
+
+  .song-title{
+    font-weight:600;
+    color:var(--text-main);
+  }
+  .song-sub{
+    font-size:0.88rem;
+    color:var(--text-muted);
+  }
+
+  .arrow{
+    margin-left:auto;
+    color:var(--text-muted);
+    font-size:18px;
+  }
+
+  .song-body{
+    padding:14px 16px 18px 16px;
+    border-top:1px solid var(--border);
+    display:none;
+    gap:12px;
+  }
+
+  .song-meta-row{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    color:var(--text-muted);
+    font-size:0.95rem;
+  }
+
+  .links a{
+    color:var(--accent);
+    text-decoration:none;
+    font-weight:600;
+    background:transparent;
+    margin-right:12px;
+  }
+
+  .parts{
+    margin-top:10px;
+    display:grid;
+    grid-template-columns:1fr;
+    gap:10px;
+  }
+
+  .part{
+    background:var(--bg-card);
+    border-radius:10px;
+    padding:10px;
+    display:flex;
+    gap:12px;
+    align-items:center;
+    border:1px solid var(--border);
+  }
+
+  .part .slot{
+    min-width:160px;
+    font-weight:600;
+    color:var(--text-main);
+  }
+  .part .player{
+    color:var(--text-muted);
+    font-size:0.95rem;
+  }
+
+  .part .actions{
+    margin-left:auto;
+    display:flex;
+    gap:8px;
+    align-items:center;
+  }
+
+  button.btn{
+    border:0;
+    padding:8px 12px;
+    font-weight:700;
+    border-radius:var(--btn-radius);
+    cursor:pointer;
+    font-size:0.92rem;
+    transition: transform .08s ease, opacity .12s ease, background-color .14s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button.btn:active{ transform:translateY(1px); }
+
+  .btn-main{
+    background:var(--accent);
+    color:#0b0b0b;
+  }
+  .btn-reserve{
+    background:var(--reserve);
+    color:#0b0b0b;
+  }
+  .btn-taken{
+    background:#2b2b2b;
+    color:var(--text-muted);
+    cursor:not-allowed;
+    opacity:0.7;
+  }
+
+  .btn-unselect{
+    background:var(--success);
+    color:#04110b;
+  }
+
+  .player.you{
+    color:var(--success);
+    font-weight:700;
+  }
+
+  .reserve-badge{
+    background:var(--reserve-soft);
+    border:1px solid rgba(139,92,246,0.18);
+    color:var(--carry);
+    padding:4px 8px;
+    border-radius:999px;
+    font-size:0.8rem;
+  }
+
+  .taken-by{
+    font-size:0.85rem;
+    color:var(--text-muted);
+  }
+
+  footer{
+    margin-top:18px;
+    display:grid;
+    gap:12px;
+  }
+
+  .foot-grid{
+    display:grid;
+    gap:12px;
+  }
+
+  @media(min-width:720px){
+    .parts{ grid-template-columns: 1fr 1fr; }
+    .foot-grid{ grid-template-columns: repeat(3,1fr); }
+  }
+
+  .card{
+    background:var(--bg-card);
+    border:1px solid var(--border);
+    padding:12px;
+    border-radius:12px;
+    color:var(--text-muted);
+    font-size:0.95rem;
+  }
+
+  /* toast */
+  .toast{
+    position:fixed;
+    left:50%;
+    transform:translateX(-50%);
+    top:18px;
+    background:#111;
+    color:var(--text-main);
+    border:1px solid rgba(255,255,255,0.04);
+    padding:10px 14px;
+    border-radius:10px;
+    display:none;
+    z-index:9999;
+    box-shadow:0 6px 20px rgba(0,0,0,0.6);
+  }
+
+  /* small touches */
+  .meta small{ color:var(--text-muted); display:block; }
+  .muted{ color:var(--text-muted); font-size:0.9rem; }
+
+</style>
+</head>
+<body>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<div class="wrap" id="app">
+  <header>
+    <div class="title">
+      <h1>Dep Session</h1>
+      <div class="meta">
+        <div>13 September 2026 • The Venue, South Lanarkshire</div>
+        <div class="deadline" style="margin-top:8px;">
+          ⚠️ Selections close: Tuesday 8 September at 8:00pm – setlist & running order confirmed after this date
+        </div>
+        <div class="counters">
+          <div class="counter" id="mainCounter">Main picks: <strong id="mainCount">0</strong> / 2 songs max (1 part per song)</div>
+          <div class="counter" id="reserveCounter">Reserve picks: <strong id="reserveCount">0</strong> selected (1 reserve per song)</div>
+        </div>
+        <div class="instruction" style="margin-top:10px;">Tap a song to open • Click “Pick Me” for Main, “Reserve Me” for backup</div>
+      </div>
+    </div>
+  </header>
+
+  <main id="songList" aria-live="polite"></main>
+
+  <footer>
+    <div class="foot-grid">
+      <div class="card" aria-labelledby="iconKeyTitle">
+        <h3 id="iconKeyTitle" style="margin:0 0 8px 0; color:var(--accent);">📋 Icon Key</h3>
+        <div>✅ = All parts confirmed / full<br>
+             ⚠️ = Open slots available<br>
+             🔄 = Carried forward from previous session<br>
+             🟡 = New suggestion / awaiting interest<br>
+             🧍 = You are signed up (main) for this song<br>
+             🛡️ = You are reserve for this song</div>
+      </div>
+
+      <div class="card" aria-labelledby="howTitle">
+        <h3 id="howTitle" style="margin:0 0 8px 0; color:var(--accent);">📖 How It Works</h3>
+        <div>
+          1) Browse the songs and tap a header to view parts.<br>
+          2) Click “Pick Me” to claim a main part (limit 2 mains).<br>
+          3) Click “Reserve Me” to be the backup for that song (one reserve per song).<br>
+          4) Organisers will confirm the running order after the deadline.
+        </div>
+      </div>
+
+      <div class="card" aria-labelledby="rulesTitle">
+        <h3 id="rulesTitle" style="margin:0 0 8px 0; color:var(--accent);">⚠️ Selection Rules</h3>
+        <div>
+          • Max 2 Main songs total per user. <br>
+          • Only 1 Main part per song. <br>
+          • Only 1 Reserve per song. <br>
+          • Cannot be both Main AND Reserve on the same song. <br>
+          • Selections close: Tuesday 8 September at 8:00pm — setlist & running order confirmed after this date.
+        </div>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<script>
+/* --------- Sample user info (from session context) --------- */
+const CURRENT_USER = { name: "Gerschwin", display: "You" };
+
+/* --------- Song definitions (12 songs) --------- */
+/* Each part: {slot: "Lead Vocals", player: "Name" or null} */
+/* Each song has 'reserve' property: {player: name or null} */
+const songs = [
+  {
+    id:1, title:"Mr Brightside", artist:"The Killers", status:"confirmed", icon:"✅",
+    length:"3:42", bpm:148, key:"D",
+    parts:[
+      {slot:"Lead Vocals", player:"Alex R."},
+      {slot:"Guitar", player:"Sam H."},
+      {slot:"Bass", player:"Jamie L."},
+      {slot:"Drums", player:"Maya K."},
+      {slot:"Keys", player:"OPEN"},
+      {slot:"Backing Vocal", player:"OPEN"}
+    ],
+    reserve:{player:null}
+  },
+  {
+    id:2, title:"Livin’ On A Prayer", artist:"Bon Jovi", status:"confirmed", icon:"✅",
+    length:"4:10", bpm:123, key:"C#m",
+    parts:[
+      {slot:"Lead Vocals", player:"Monica A."},
+      {slot:"Guitar", player:"Tom B."},
+      {slot:"Bass", player:"Ewan P."},
+      {slot:"Drums", player:"Jordan T."},
+      {slot:"Keys", player:"Claire D."},
+      {slot:"Backing Vocal", player:"OPEN"}
+    ],
+    reserve:{player:"Hannah R."}
+  },
+  {
+    id:3, title:"Sex On Fire", artist:"Kings of Leon", status:"confirmed", icon:"✅",
+    length:"3:23", bpm:144, key:"B",
+    parts:[
+      {slot:"Lead Vocals", player:"OPEN"},
+      {slot:"Guitar", player:"Liam M."},
+      {slot:"Bass", player:"OPEN"},
+      {slot:"Drums", player:"Drew S."},
+      {slot:"Keys", player:"OPEN"},
+      {slot:"Backing Vocal", player:"Claire D."}
+    ],
+    reserve:{player:null}
+  },
+  {
+    id:4, title:"Don’t Look Back In Anger", artist:"Oasis", status:"open", icon:"⚠️",
+    length:"4:48", bpm:120, key:"C",
+    parts:[
+      {slot:"Lead Vocals", player:"OPEN"},
+      {slot:"Guitar", player:"OPEN"},
+      {slot:"Bass", player:"Tom B."},
+      {slot:"Drums", player:"OPEN"},
+      {slot:"Keys", player:"OPEN"},
+      {slot:"Backing Vocal", player:"OPEN"}
+    ],
+    reserve:{player:null}
+  },
+  {
+    id:5, title:"Sweet Child O’ Mine", artist:"Guns N’ Roses", status:"open", icon:"⚠️",
+    length:"5:55", bpm:125, key:"D",
+    parts:[
+      {slot:"Lead Vocals", player:"OPEN"},
+      {slot:"Guitar", player:"Alex R."},
+      {slot:"Bass", player:"OPEN"},
+      {slot:"Drums", player:"Ewan P."},
+      {slot:"Keys", player:"OPEN"},
+      {slot:"Backing Vocal", player:"OPEN"}
+    ],
+    reserve:{player:null}
+  },
+  {
+    id:6, title:"Mr Brightside (Alt Set)", artist:"The Killers", status:"open", icon:"⚠️",
+    length:"3:55", bpm:148, key:"D",
+    parts:[
+      {slot:"Lead Vocals", player:"OPEN"},
+      {slot:"Guitar", player:"OPEN"},
+      {slot:"Bass", player:"Jamie L."},
+      {slot:"Drums", player:"Maya K."},
+      {slot:"Keys", player:"OPEN"},
+      {slot:"Backing Vocal", player:"OPEN"}
+    ],
+    reserve:{player:null}
+  },
+  {
+    id:7, title:"Teenage Kicks", artist:"The Undertones", status:"carried", icon:"🔄",
+    length:"2:18", bpm:160, key:"G",
+    parts:[
+      {slot:"Lead Vocals", player:"Mikey P."},
+      {slot:"Guitar", player:"OPEN"},
+      {slot:"Bass", player:"OPEN"},
+      {slot:"Drums", player:"OPEN"},
+      {slot:"Keys", player:"OPEN"},
+      {slot:"Backing Vocal", player:"OPEN"}
+    ],
+    reserve:{player:null}
+  },
+  {
+    id:8, title:"Wonderwall", artist:"Oasis", status:"carried", icon:"🔄",
+    length:"4:18", bpm:87, key:"F#m",
+    parts:[
+      {slot:"Lead Vocals", player:"OPEN"},
+      {slot:"Guitar", player:"Harry C."},
+      {slot:"Bass", player:"OPEN"},
+      {slot:"Drums", player:"OPEN"},
+      {slot:"Keys", player:"OPEN"},
+      {slot:"Backing Vocal", player:"OPEN"}
+    ],
+    reserve:{player:null}
+  },
+  {
+    id:9, title:"Seven Nation Army", artist:"The White Stripes", status:"carried", icon:"🔄",
+    length:"3:52", bpm:124, key:"E",
+    parts:[
+      {slot:"Lead Vocals", player:"OPEN"},
+      {slot:"Guitar", player:"OPEN"},
+      {slot:"Bass", player:"Jamie L."},
+      {slot:"Drums", player:"Drew S."},
+      {slot:"Keys", player:"OPEN"},
+      {slot:"Backing Vocal", player:"OPEN"}
+    ],
+    reserve:{player:"Sam H."}
+  },
+  {
+    id:10, title:"Dakota", artist:"Stereophonics", status:"new", icon:"🟡",
+    length:"4:20", bpm:102, key:"B",
+    parts:[
+      {slot:"Lead Vocals", player:"OPEN"},
+      {slot:"Guitar", player:"OPEN"},
+      {slot:"Bass", player:"OPEN"},
+      {slot:"Drums", player:"OPEN"},
+      {slot:"Keys", player:"OPEN"},
+      {slot:"Backing Vocal", player:"OPEN"}
+    ],
+    reserve:{player:null}
+  },
+  {
+    id:11, title:"Chelsea Dagger", artist:"The Fratellis", status:"new", icon:"🟡",
+    length:"3:30", bpm:138, key:"A",
+    parts:[
+      {slot:"Lead Vocals", player:"OPEN"},
+      {slot:"Guitar", player:"OPEN"},
+      {slot:"Bass", player:"OPEN"},
+      {slot:"Drums", player:"OPEN"},
+      {slot:"Keys", player:"OPEN"},
+      {slot:"Backing Vocal", player:"OPEN"}
+    ],
+    reserve:{player:null}
+  },
+  {
+    id:12, title:"I Bet You Look Good On The Dancefloor", artist:"Arctic Monkeys", status:"new", icon:"🟡",
+    length:"2:54", bpm:156, key:"A",
+    parts:[
+      {slot:"Lead Vocals", player:"OPEN"},
+      {slot:"Guitar", player:"OPEN"},
+      {slot:"Bass", player:"OPEN"},
+      {slot:"Drums", player:"OPEN"},
+      {slot:"Keys", player:"OPEN"},
+      {slot:"Backing Vocal", player:"OPEN"}
+    ],
+    reserve:{player:null}
+  }
+];
+
+/* --------- State for current user's selections --------- */
+const state = {
+  mains: [],   // array of {songId, slotIndex}
+  reserves: [] // array of songId
+};
+
+/* --------- Utility & rendering --------- */
+
+const songListEl = document.getElementById('songList');
+const mainCountEl = document.getElementById('mainCount');
+const reserveCountEl = document.getElementById('reserveCount');
+const toastEl = document.getElementById('toast');
+
+function showToast(message, timeout=3500){
+  toastEl.textContent = message;
+  toastEl.style.display = 'block';
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(()=>{ toastEl.style.display='none'; }, timeout);
+}
+
+/* Render the full song list */
+function renderSongs(){
+  songListEl.innerHTML = '';
+  songs.forEach((s, idx)=>{
+    const card = document.createElement('article');
+    card.className = 'song-card';
+    card.setAttribute('data-id', s.id);
+
+    const header = document.createElement('div');
+    header.className = 'song-header';
+    header.tabIndex = 0;
+    header.setAttribute('role','button');
+    header.setAttribute('aria-expanded','false');
+
+    const status = document.createElement('div');
+    status.className = 'status-icon';
+    status.title = s.status;
+    status.innerHTML = `<span aria-hidden="true">${s.icon}</span>`;
+
+    const meta = document.createElement('div');
+    meta.className = 'song-meta';
+    meta.innerHTML = `<div class="song-title">${s.title} — <span style="color:var(--text-muted); font-weight:600">${s.artist}</span></div>
+                      <div class="song-sub muted">${s.length} • ${s.bpm} BPM • Key ${s.key}</div>`;
+
+    const arrow = document.createElement('div');
+    arrow.className = 'arrow';
+    arrow.innerHTML = '▸';
+
+    header.appendChild(status);
+    header.appendChild(meta);
+    header.appendChild(arrow);
+
+    /* personal marker if user is signed up for this song (main or reserve) */
+    const isMainHere = state.mains.some(m=>m.songId===s.id);
+    const isReserveHere = state.reserves.includes(s.id);
+    if(isMainHere || isReserveHere){
+      const personal = document.createElement('div');
+      personal.className = 'personal-marker';
+      personal.innerHTML = `${isMainHere ? '🧍 Main' : ''}${isMainHere && isReserveHere ? ' • ' : ''}${isReserveHere ? '🛡️ Reserve' : ''}`;
+      header.appendChild(personal);
+    }
+
+    /* body */
+    const body = document.createElement('div');
+    body.className = 'song-body';
+
+    /* header row inside body: links + reserve status */
+    const metaRow = document.createElement('div');
+    metaRow.className = 'song-meta-row';
+    const links = document.createElement('div');
+    links.className = 'links';
+    links.innerHTML = `<a href="#" aria-disabled="true" onclick="event.preventDefault()">Listen</a><a href="#" aria-disabled="true" onclick="event.preventDefault()">Chords</a>`;
+
+    const reserveInfo = document.createElement('div');
+    reserveInfo.style.marginLeft='auto';
+    reserveInfo.innerHTML = `<span class="taken-by">Reserve: ${s.reserve.player ? escapeHtml(s.reserve.player) : 'OPEN'}</span>`;
+
+    metaRow.appendChild(links);
+    metaRow.appendChild(reserveInfo);
+
+    /* parts list */
+    const partsWrap = document.createElement('div');
+    partsWrap.className = 'parts';
+
+    s.parts.forEach((p, pIndex)=>{
+      const partEl = document.createElement('div');
+      partEl.className = 'part';
+      partEl.setAttribute('data-slot-index', pIndex);
+
+      const slot = document.createElement('div');
+      slot.className = 'slot';
+      slot.textContent = p.slot;
+
+      const player = document.createElement('div');
+      const normalized = (p.player && p.player !== 'OPEN');
+      let isTakenByYou = false;
+      if(normalized && p.player === CURRENT_USER.name) { isTakenByYou = true; }
+      // Show display name if it's the current user
+      if(p.player === CURRENT_USER.name){
+        player.className = 'player you';
+        player.textContent = CURRENT_USER.display;
+      } else if (normalized) {
+        player.className = 'player';
+        player.textContent = p.player;
+      } else {
+        player.className = 'player';
+        player.textContent = 'OPEN';
+      }
+
+      const actions = document.createElement('div');
+      actions.className = 'actions';
+
+      /* Determine which buttons to show depending on state and occupancy */
+      // If taken by other user -> "Taken" disabled
+      if(normalized && p.player !== CURRENT_USER.name){
+        const takenBtn = document.createElement('button');
+        takenBtn.className = 'btn btn-taken';
+        takenBtn.disabled = true;
+        takenBtn.textContent = 'Taken';
+        actions.appendChild(takenBtn);
+      } else if (p.player === CURRENT_USER.name){
+        // If you have this main slot, show Unselect
+        const unBtn = document.createElement('button');
+        unBtn.className = 'btn btn-unselect';
+        unBtn.textContent = 'Unselect';
+        unBtn.onclick = ()=>{ unselectMain(s.id, pIndex); };
+        actions.appendChild(unBtn);
+      } else {
+        // OPEN slot: show Pick Me or if main elsewhere?
+        const pickBtn = document.createElement('button');
+        pickBtn.className = 'btn btn-main';
+        pickBtn.textContent = 'Pick Me';
+        pickBtn.onclick = ()=>{ pickMain(s.id, pIndex); };
+        actions.appendChild(pickBtn);
+      }
+
+      /* Reserve column: if reserve slot taken by other -> show taken; if by you -> Unselect reserve; else Reserve Me */
+      if(s.reserve.player && s.reserve.player !== CURRENT_USER.name){
+        const takenR = document.createElement('button');
+        takenR.className = 'btn btn-taken';
+        takenR.disabled = true;
+        takenR.textContent = 'Reserve Taken';
+        actions.appendChild(takenR);
+      } else if(s.reserve.player === CURRENT_USER.name){
+        const unRes = document.createElement('button');
+        unRes.className = 'btn btn-unselect';
+        unRes.textContent = 'Unselect Reserve';
+        unRes.onclick = ()=>{ unselectReserve(s.id); };
+        actions.appendChild(unRes);
+      } else {
+        const resBtn = document.createElement('button');
+        resBtn.className = 'btn btn-reserve';
+        resBtn.textContent = 'Reserve Me';
+        resBtn.onclick = ()=>{ pickReserve(s.id); };
+        actions.appendChild(resBtn);
+      }
+
+      partEl.appendChild(slot);
+      partEl.appendChild(player);
+      partEl.appendChild(actions);
+      partsWrap.appendChild(partEl);
+    });
+
+    body.appendChild(metaRow);
+    body.appendChild(partsWrap);
+
+    /* Append header and body */
+    card.appendChild(header);
+    card.appendChild(body);
+    songListEl.appendChild(card);
+
+    /* Event handlers for accordion expand/collapse (only one open at a time) */
+    header.addEventListener('click', ()=>{
+      const expanded = header.getAttribute('aria-expanded') === 'true';
+      closeAll();
+      if(!expanded){
+        header.setAttribute('aria-expanded','true');
+        body.style.display = 'block';
+        arrow.innerHTML = '▾';
+      } else {
+        header.setAttribute('aria-expanded','false');
+        body.style.display = 'none';
+        arrow.innerHTML = '▸';
+      }
+    });
+
+    header.addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter' || e.key === ' '){
+        e.preventDefault();
+        header.click();
+      }
+    });
+  });
+
+  updateCounters();
+}
+
+/* Helper to close all open bodies */
+function closeAll(){
+  document.querySelectorAll('.song-card').forEach(card=>{
+    const h = card.querySelector('.song-header');
+    const b = card.querySelector('.song-body');
+    const arr = card.querySelector('.arrow');
+    if(h){
+      h.setAttribute('aria-expanded','false');
+      if(b) b.style.display='none';
+      if(arr) arr.innerHTML='▸';
+    }
+  });
+}
+
+/* Escape helper for safety (minimal) for names */
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'" :'&#39;'}[m]; });
+}
+
+/* --------- Selection logic --------- */
+
+function pickMain(songId, slotIndex){
+  const song = songs.find(s=>s.id===songId);
+  const part = song.parts[slotIndex];
+
+  // Sanity: slot must be OPEN
+  if(part.player && part.player !== 'OPEN'){
+    showToast('That slot is already taken.');
+    return;
+  }
+
+  // Enforce only 1 main part per song
+  const songHasMain = state.mains.some(m => m.songId === songId);
+  if(songHasMain){
+    showToast('You already have a main part on this song (one main per song).');
+    return;
+  }
+
+  // Enforce max 2 mains total
+  if(state.mains.length >= 2){
+    showToast('You may only pick up to 2 main songs. Unselect one to pick another.');
+    return;
+  }
+
+  // Enforce cannot be reserve and main on same song
+  if(state.reserves.includes(songId)){
+    showToast('You are already the reserve for this song — you cannot be both main and reserve.');
+    return;
+  }
+
+  // Claim it
+  part.player = CURRENT_USER.name;
+  state.mains.push({songId, slotIndex});
+  renderSongs();
+  showToast('Main part selected — you are signed up for this song (Main).');
+}
+
+function unselectMain(songId, slotIndex){
+  const song = songs.find(s=>s.id===songId);
+  const part = song.parts[slotIndex];
+
+  if(part.player !== CURRENT_USER.name){
+    showToast('You are not the current main for that slot.');
+    return;
+  }
+
+  part.player = 'OPEN';
+  const idx = state.mains.findIndex(m=>m.songId===songId && m.slotIndex===slotIndex);
+  if(idx >= 0) state.mains.splice(idx,1);
+  renderSongs();
+  showToast('Main selection removed.');
+}
+
+function pickReserve(songId){
+  const song = songs.find(s=>s.id===songId);
+
+  // If reserve is already taken by someone else
+  if(song.reserve.player && song.reserve.player !== CURRENT_USER.name){
+    showToast('A reserve is already assigned for this song.');
+    return;
+  }
+  // If you already reserved
+  if(song.reserve.player === CURRENT_USER.name){
+    showToast('You are already the reserve for this song.');
+    return;
+  }
+  // If you already have a main on same song
+  if(state.mains.some(m=>m.songId===songId)){
+    showToast('You are already main on this song — cannot reserve the same song.');
+    return;
+  }
+  // If you have a reserve elsewhere that's fine (no global reserve limit specified)
+  // Claim reserve
+  song.reserve.player = CURRENT_USER.name;
+  state.reserves.push(songId);
+  renderSongs();
+  showToast('You are now the reserve for this song.');
+}
+
+function unselectReserve(songId){
+  const song = songs.find(s=>s.id===songId);
+  if(song.reserve.player !== CURRENT_USER.name){
+    showToast('You are not the reserve for this song.');
+    return;
+  }
+  song.reserve.player = null;
+  const idx = state.reserves.indexOf(songId);
+  if(idx >= 0) state.reserves.splice(idx,1);
+  renderSongs();
+  showToast('Reserve removed.');
+}
+
+/* Update the header counters */
+function updateCounters(){
+  mainCountEl.textContent = state.mains.length;
+  reserveCountEl.textContent = state.reserves.length;
+
+  // also update personal markers in each header
+  document.querySelectorAll('.song-card').forEach(card=>{
+    const id = Number(card.getAttribute('data-id'));
+    const h = card.querySelector('.song-header');
+    // remove existing personal marker if any
+    const existing = h.querySelector('.personal-marker');
+    if(existing) existing.remove();
+    const isMainHere = state.mains.some(m=>m.songId===id);
+    const isReserveHere = state.reserves.includes(id);
+    if(isMainHere || isReserveHere){
+      const personal = document.createElement('div');
+      personal.className = 'personal-marker';
+      personal.innerHTML = `${isMainHere ? '🧍 Main' : ''}${isMainHere && isReserveHere ? ' • ' : ''}${isReserveHere ? '🛡️ Reserve' : ''}`;
+      h.appendChild(personal);
+    }
+  });
+}
+
+/* Initialize UI: render songs */
+renderSongs();
+
+/* Expose some functions for debugging in devtools (optional) */
+window._DEPSESSION = { songs, state, pickMain, pickReserve, unselectMain, unselectReserve };
+
+/* Accessibility: keyboard navigation for toast close (escape) */
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'Escape'){
+    toastEl.style.display='none';
+  }
+});
+
+/* Keep only one accordion open after navigation/resizing */
+window.addEventListener('resize', ()=>{ closeAll(); });
+
+</script>
+</body>
+</html>
