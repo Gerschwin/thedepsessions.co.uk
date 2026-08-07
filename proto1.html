@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dep Session – Song List</title>
+<style>
+  :root {
+    --bg-main: #0f0f0f;
+    --bg-card: #1a1a1a;
+    --bg-hover: #222222;
+    --accent: #f97316;
+    --accent-soft: rgba(249, 115, 22, 0.15);
+    --reserve: #8b5cf6;
+    --reserve-soft: rgba(139, 92, 246, 0.15);
+    --text-main: #f1f5f9;
+    --text-muted: #94a3b8;
+    --success: #10b981;
+    --warning: #f97316;
+    --carry: #8b5cf6;
+    --suggested: #eab308;
+    --border: #27272a;
+    --radius: 12px;
+    --btn-radius: 6px;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Roboto, -apple-system, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background: var(--bg-main);
+    color: var(--text-main);
+    padding: 16px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .page-header {
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .page-header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1.3;
+  }
+  .session-details {
+    font-size: 15px;
+    color: var(--text-main);
+    margin-top: 4px;
+  }
+  .deadline {
+    font-size: 13px;
+    color: var(--warning);
+    margin-top: 6px;
+  }
+  .selection-summary {
+    font-size: 13px;
+    color: var(--success);
+    margin-top: 8px;
+    padding: 6px 10px;
+    background: var(--accent-soft);
+    border-radius: var(--btn-radius);
+    display: inline-block;
+  }
+  .reserve-summary {
+    font-size: 13px;
+    color: var(--reserve);
+    margin-top: 4px;
+    padding: 6px 10px;
+    background: var(--reserve-soft);
+    border-radius: var(--btn-radius);
+    display: inline-block;
+  }
+  .page-header p {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 8px;
+  }
+
+  .song-card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    margin-bottom: 12px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    transition: transform 0.15s ease;
+  }
+  .song-card:active { transform: scale(0.98); }
+
+  .song-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .song-header:hover { background: var(--bg-hover); }
+
+  .status-icon { font-size: 18px; width: 24px; text-align: center; }
+  .personal-indicator { font-size: 16px; width: 20px; text-align: center; }
+  .song-meta { flex: 1; }
+  .song-name { font-size: 16px; font-weight: 600; display: block; }
+  .song-artist { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+  .chevron {
+    color: var(--text-muted);
+    transition: transform 0.25s ease;
+  }
+  .song-card.open .chevron { transform: rotate(180deg); }
+
+  .song-details {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: #151515;
+    border-top: 1px solid var(--border);
+  }
+  .song-card.open .song-details { max-height: 900px; }
+  .details-inner { padding: 16px; }
+
+  .info-grid {
+    display: grid;
+    gap: 6px;
+    font-size: 13px;
+  }
+  .info-row { display: flex; justify-content: space-between; }
+  .info-row.label { color: var(--text-muted); }
+  .info-row.value { font-weight: 500; }
+
+  .divider { height: 1px; background: var(--border); margin: 12px 0; }
+
+  .part-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    font-size: 13px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .part-name { color: var(--text-muted); flex: 1; min-width: 100px; }
+  .part-value { font-weight: 500; min-width: 70px; }
+  .open-slot { color: var(--warning); font-weight: 600; }
+  .reserve-tag { font-size: 11px; color: var(--text-muted); margin-left: 6px; font-style: italic; }
+
+  .btn-group { display: flex; gap: 6px; }
+  .pick-btn, .reserve-btn {
+    padding: 4px 8px;
+    font-size: 11px;
+    border: none;
+    border-radius: var(--btn-radius);
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+  }
+  .pick-btn { background: var(--accent); color: white; }
+  .pick-btn:hover { background: #ea580c; }
+  .pick-btn.selected { background: var(--success); }
+  .reserve-btn { background: var(--reserve); color: white; }
+  .reserve-btn:hover { background: #7c3aed; }
+  .reserve-btn.selected { background: var(--success); }
+  .pick-btn:disabled, .reserve-btn:disabled { background: #374151; cursor: not-allowed; opacity: 0.6; }
+
+  .link-group { display: flex; gap: 16px; margin-top: 8px; }
+  .link-group a { color: var(--accent); font-size: 13px; text-decoration: none; font-weight: 500; }
+  .link-group a:hover { text-decoration: underline; }
+
+  .status-sugg { color: var(--suggested); }
+  .status-open { color: var(--warning); }
+  .status-ok { color: var(--success); }
+  .status-roll { color: var(--carry); }
+
+  .is-playing { color: var(--success); }
+  .is-reserve { color: var(--accent); }
+
+  /* --- INFO SECTION AT BOTTOM --- */
+  .info-section {
+    margin-top: 32px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .info-section h3 {
+    color: var(--accent);
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+  .icon-key {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .key-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .rules-list, .how-to-list {
+    padding-left: 18px;
+    margin-bottom: 12px;
+  }
+  .rules-list li, .how-to-list li {
+    margin-bottom: 4px;
+  }
+
+  @media (min-width: 600px) {
+    body { padding: 24px; }
+    .page-header h1 { font-size: 26px; }
+    .song-header { padding: 16px 20px; }
+    .song-name { font-size: 17px; }
+    .details-inner { padding: 18px 20px; }
+    .info-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .part-row { font-size: 14px; }
+    .pick-btn, .reserve-btn { font-size: 12px; padding: 5px 10px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Dep Session</h1>
+  <div class="session-details">13 September 2026 • The Venue, South Lanarkshire</div>
+  <div class="deadline">⚠️ Selections close: Tuesday 8 September at 8:00pm – setlist & running order confirmed after this date</div>
+  <div class="selection-summary" id="mainSummary">Main picks: 0 / 2 songs max (1 part per song)</div>
+  <div class="reserve-summary" id="reserveSummary">Reserve picks: 0 selected (1 reserve per song)</div>
+  <p>Tap a song to open • Click “Pick Me” for Main, “Reserve Me” for backup</p>
+</div>
+
+<!-- ✅ FULL / CONFIRMED -->
+<div class="song-card" data-song="mr-brightside">
+  <div class="song-header" onclick="toggleOnly(this)">
+    <span class="status-icon status-ok">✅</span>
+    <span class="personal-indicator is-playing">🧍</span>
+    <div class="song-meta">
+      <span class="song-name">Mr Brightside</span>
+      <span class="song-artist">The Killers</span>
+    </div>
+    <span class="chevron">▼</span>
+  </div>
+  <div class="song-details">
+    <div class="details-inner">
+      <div class="info-grid"><div class="info-row"><span class="label">Length / BPM / Key</span><span class="value">3:49 • 148 • Db</span></div></div>
+      <div class="link-group"><a href="#">▶ Listen</a><a href="#">🎼 Chords</a></div>
+      <div class="divider"></div>
+      <div class="part-row"><span class="part-name">Lead Vocals</span><span class="part-value">Jane M <span class="reserve-tag">Reserve: Lucy K</span></span><div class="btn-group"><button class="pick-btn" disabled>Taken</button><button class="reserve-btn" disabled>Taken</button></div></div>
+      <div class="part-row"><span class="part-name">Backing Vocals</span><span class="part-value open-slot">OPEN</span><div class="btn-group"><button class="pick-btn" onclick="selectMain(this, 'mr-brightside', 'Backing Vocals')">Pick Me</button><button class="reserve-btn" onclick="selectReserve(this, 'mr-brightside', 'Backing Vocals')">Reserve Me</button></div></div>
+      <div class="part-row"><span class="part-name">Lead Guitar</span><span class="part-value">Dave R <span class="reserve-tag">Reserve: Sam T</span></span><div class="btn-group"><button class="pick-btn" disabled>Taken</button><button class="reserve-btn" disabled>Taken</button></div></div>
+      <div class="part-row"><span class="part-name">Rhythm Guitar</span><span class="part-value">Sarah L</span><div class="btn-group"><button class="pick-btn" disabled>Taken</button><button class="reserve-btn" onclick="selectReserve(this, 'mr-brightside', 'Rhythm Guitar')">Reserve Me</button></div></div>
+      <div class="part-row"><span class="part-name">Bass</span><span class="part-value">Jim K</span><div class="btn-group"><button class="pick-btn" disabled>Taken</button><button class="reserve-btn" onclick="selectReserve(this, 'mr-brightside', 'Bass')">Reserve Me</button></div></div>
+      <div class="part-row"><span class="part-name">Drums</span><span class="part-value">Kev P <span class="reserve-tag">Reserve: Scott M</span></span><div class="btn-group"><button class="pick-btn" disabled>Taken</button><button class="reserve-btn" disabled>Taken</button></div></div>
+      <div class="part-row"><span class="part-name">Keys</span><span class="part-value open-slot">OPEN</span><div class="btn-group"><button class="pick-btn" onclick="selectMain(this, 'mr-brightside', 'Keys')">Pick Me</button><button class="reserve-btn" onclick="selectReserve(this, 'mr-brightside', 'Keys')">Reserve Me</button></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="song-card" data-song="livin-prayer">
+  <div class="song-header" onclick="toggleOnly(this)">
+    <span class="status-icon status-ok">✅</span>
+    <div class="song-meta"><span class="song-name">Livin’ On A Prayer</span><span class="song-artist">Bon Jovi</span></div>
+    <span class="chevron">▼</span>
+  </div>
+  <div class="song-details">
+    <div class="details-inner">
+      <div class="info-grid"><div class="info-row"><span class="label">Length / BPM / Key</span><span class="value">4:09 • 123 • G</span></div></div>
+      <div class="link-group"><a href="#">▶ Listen</a></div><div class="divider"></div>
+      <div class="part-row"><span class="part-name">Lead Vocals</span><span class="part-value">Mark T</span><div class="btn-group"><button class="pick-btn" disabled>Taken</button><button class="reserve-btn" disabled>Taken</button></div></div>
+      <div class="part-row"><span class="part-name">Lead Guitar</span><span class="part-value">Chris B <span class="reserve-tag">Reserve: Niall R</span></span><div class="btn-group"><button class="pick-btn" disabled>Taken</button><button class="reserve-btn" disabled>Taken</button></div></div>
+      <div class="part-row"><span class="part-name">Rhythm Guitar</span><span class="part-value open-slot">OPEN</span><div class="btn-group"><button class="pick-btn" onclick="selectMain(this, 'livin-prayer', 'Rhythm Guitar')">Pick Me</button><button class="reserve-btn" onclick="selectReserve(this, 'livin-prayer', 'Rhythm Guitar')">Reserve Me</button></div></div>
+      <div class="part-row"><span class="part-name">Bass</span><span class="part-value">Ben D</span><div class="btn-group"><button class="pick-btn" disabled>Taken</button><button class="reserve-btn" onclick="selectReserve(this, 'livin-prayer', 'Bass')">Reserve Me</button></div></div>
+      <div class="part-row"><span class="part-name">Drums</span><span class="part-value">Tom H</span><div class="btn-group"><button class="pick-btn" disabled>Taken</button><button class="reserve-btn" onclick="selectReserve(this, 'livin-prayer', 'Drums')">Reserve Me</button></div></div>
+      <div class="part-row"><span class="part-name">Keys</span><span class="part-value open-slot">OPEN</span><div class="btn-group"><button class="pick-btn" onclick="selectMain(this, 'livin-prayer', 'Keys')">Pick Me</button><button class="reserve-btn" onclick="selectReserve(this, 'livin-prayer', 'Keys')">Reserve Me</button></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="song-card" data-song="sex-on-fire">
+  <div class="song-header" onclick="toggleOnly(this)">
+    <span class="status-icon status-ok">✅</span>
+    <div class="song-meta"><span class="song-name">Sex On Fire</span><span class="song-artist">Kings of Leon</span></div>
+    <span class="chevron">▼</span>
+  </div>
+  <div class="song-details">
+    <div class="details-inner">
+      <div class="info-grid"><div class="info-row"><span class="label">Length / BPM / Key</span><span class="value">3:23 • 154 • D</span></div></div>
+      <div class="link-group"><a href="#">▶ Listen</a></div><div class="divider"></div>
+      <div class="part-row"><span class="part-name">Lead Vocals</span><span class="part-value">Rob S</span><div class="btn-group"><button class="pick-btn" disabled>Taken</button><button class="reserve-btn" disabled>Taken</button></div></div>
+      <div class="part-row"><span class="part-name">Lead Guitar</span><span class="part-value">Mike G</span><div class="btn-group"><button class="pick-btn" disabled>Taken</button><button class="reserve-btn" onclick="selectReserve(this, 'sex-on-fire', 'Lead Guitar')">Reserve Me</button></div></div>
+      <div class="part-row"><span class="part-name">Bass</span><span class="part-value open-slot">OPEN</span><div class="btn-group"><button class="pick-btn" onclick="selectMain(this, 'sex-on-fire', 'Bass')">Pick Me</button><button class="reserve-btn" onclick="selectReserve(this, 'sex-on-fire', 'Bass')">Reserve Me</button></div></div>
+      <div class="part-row"><span class="part-name">Drums</span><span class="part-value">Scott M <span class="reserve-tag">Reserve: Daz M</span></span><div class="btn-group"><button class="pick-btn" disabled>Taken</button><button class="reserve-btn" disabled>Taken</button></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ⚠️ SLOTS OPEN -->
+<div class="song-card" data-song="dont-look-back">
+  <div class="song-header" onclick="toggleOnly(this)">
+    <span class="status-icon status-open">⚠️</span>
+    <span class="personal-indicator is-reserve">🛡️</span>
+    <div class="song-meta"><span class="song-name">Don’t Look Back In Anger</span><span class="song-artist">Oasis</span></div>
+    <span class="chevron">▼</span>
+  </div>
+  <div class="song-details">
+    <div class="details-inner">
+      <div class="info-grid"><div class="info-row"><span class="label">Length / BPM / Key</span><span class="value">4:48 • 76 • G</span></div></div>
+      <div class="link-group"><a href="#">▶ Listen</a></div><div class="divider"></div>
+      <div class="part-row"><span class="part-name">Lead Vocals</span><span class="part-value">Kate W</span><div class="btn-group"><button class="pick-btn" disabled>Taken</button><button class="reserve-btn" disabled>Taken</button></div></div>
+      <div class="part-row"><span class="part-name">Lead Guitar</span><span class="part-value open-slot">OPEN</span><div class="btn-group"><button class="pick-btn" onclick="selectMain(this, 'dont-look-back', 'Lead Guitar')">Pick Me</button><button class="reserve-btn" onclick="selectReserve(this, 'dont-look-back', 'Lead Guitar')">Reserve Me</button></div></div>
+      <div class="part-row"><span class="part-name">Rhythm Guitar</span><span class="part-value">John D</span><div class="btn-group"><button class="pick-btn" disabled>Taken</button><button class="reserve-btn" onclick="selectReserve(this, 'dont-look-back', 'Rhythm Guitar')">Reserve Me</button></div></div>
+      <div class="part-row"><span class="part-name">Bass</span><span class="part-value">Phil G</span><div class="btn-group"><button class="pick-btn" disabled>Taken</button><button class="reserve-btn" onclick="selectReserve(this, 'dont-look-back', 'Bass')">Reserve Me</button></div></div>
+      <div class="part-row"><span class="part-name">Drums</span><span class="part-value">Rob S</span><div class="btn-group"><button class="pick-btn" disabled>Taken</button><button class="reserve-btn" onclick="selectReserve(this, 'dont-look-back', 'Drums')">Reserve Me</button></div></div>
+      <div class="part-row"><span class="part-name">Piano</span><span class="part-value open-slot">OPEN</span><div class="btn-group"><button class="pick-btn" onclick="selectMain(this, 'dont-look-back', 'Piano')">Pick Me</button><button class="reserve-btn" onclick="selectReserve(this, 'dont-look-back', 'Piano')">Reserve Me</button></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="song-card" data-song="sweet-child">
+  <div class="song-header" onclick="toggleOnly(this)">
+    <span class="status-icon status-open">⚠️</span>
+    <div class="song-meta"><span class="song-name">Sweet Child O’ Mine</span><span class="song-artist">Guns N’ Roses</span></div>
+    <span class="chevron">▼</span>
+  </div>
+  <div class="song-details">
+    <div class="details-inner">
+      <div class="info-grid"><div class="info-row"><span class="label">Length / BPM / Key</span><span class="value">5:56 • 126 • D</span></div></div>
+      <div class="link-group"><a href="#">▶ Listen</a></div><div class="divider"></div>
+      <div class="part-row"><span class="part-name">Lead Vocals</span><span class="part-value open-slot">OPEN</span><div class="btn-group"><button class="pick-btn" onclick="selectMain(this, 'sweet-child', 'Lead Vocals')">Pick Me</button><button class="reserve-btn" onclick="selectReserve(this, 'sweet-child', 'Lead Vocals')">Reserve Me</button></div></div>
+      <div class="part-row"><span class="part-name">Lead Guitar</span><span class="part-value">Niall R</span><div class="btn-group"><button class="pick-btn" disabled>Taken</button><button class="reserve-btn" disabled>Taken</button></div></div>
+      <div class="part-row"><span class="part-name">Rhythm Guitar</span><span class="part-value open-slot">OPEN</span><div class="btn-group"><button class="pick-btn" onclick="selectMain(this, 'sweet-child', 'Rhythm Guitar')">Pick Me</button><button class="reserve-btn" onclick="selectReserve(this, 'sweet-child', 'Rhythm Guitar')">Reserve Me</button></div></div>
+      <div class="part-row"><span class="part-name">Bass</span><span class="part-value">Gaz P</span><div class="btn-group"><button class="pick-btn" disabled>Taken</button><button class="reserve-btn" onclick="selectReserve(this, 'sweet-child', 'Bass')">Reserve Me</button></div></div>
+      <div class="part-row"><span class="part-name">Drums</span><span class="part-value">Daz M</span><div class="btn-group"><button class="pick-btn" disabled>Taken</button><button class="reserve-btn" onclick="selectReserve(this, 'sweet-child', 'Drums')">Reserve Me</button></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="song-card" data-song="mr-brightside-alt">
+  <div class="song-header" onclick="toggleOnly(this)">
+    <span class="status-icon status-open">⚠️</span>
+    <div class="song-meta"><span class="song-name">Mr Brightside</span><span class="song-artist">The Killers (Alt Set)</span></div>
+    <span class="chevron">▼</span>
+  </div>
+  <div class="song-details">
+    <div class="details-inner">
+      <div class="info-grid"><div class="info-row"><span class="label">Length / BPM / Key</span><span class="value">3:49 • 148 • Db</span></div></div>
+      <div class="link-group"><a href="#">▶ Listen</a></div><div class="divider"></div>
+      <div class="part-row"><span class="part-name">Lead Vocals</span><span class="part-value">Jane M</span><div class="btn-group"><button class="pick-btn" disabled>Taken</button><button class="reserve-btn" disabled>Taken</button></div></div>
+      <div class="part-row"><span class="part-name">Backing Vocals</span><span class="part-value open-slot">OPEN</span><div class="btn-group"><button class="pick-btn" onclick="selectMain(this, 'mr-brightside-alt', 'Backing Vocals')">Pick Me</button><button class="reserve-btn" onclick="selectReserve(this, 'mr-brightside-alt', 'Backing Vocals')">Reserve Me</button></div></div>
+      <div class="part-row"><span class="part-name">Lead Guitar</span><span class="part-value">Dave R</span><div class="btn-group"><button class="pick-btn" disabled>Taken</button><button class="reserve-btn" disabled>Taken</button></div></div>
+      <div class="part-row"><span class="part-name">Rhythm Guitar</span><span class="part-value">Sarah L</span><div class="btn-group"><button class="pick-btn" disabled>Taken</button><button class="reserve-btn" onclick="selectReserve(this, 'mr-brightside-alt', 'Rhythm Guitar')">Reserve Me</button></div></div>
+      <div class="part-row"><span class="part-name">Bass</span><span class="part-value">Jim K</span><div class="btn-group"><button class="pick-btn" disabled>Taken</button><button class="reserve-btn" onclick="selectReserve(this, 'mr-brightside-alt', 'Bass')">Reserve Me</button></div></div>
+      <div class="part-row"><span class="part-name">Drums</span><span class="part-value open-slot">OPEN</span><div class="btn-group"><button class="pick-btn" onclick="selectMain(this, 'mr-brightside-alt', 'Drums')">Pick Me</button><button class="reserve-btn" onclick="selectReserve(this, 'mr-brightside-alt', 'Drums')">Reserve Me</button></div></div>
+      <div class="part-row"><span class="part-name">Keys</span><span class="part-value open-slot">OPEN</span><div class="btn-group"><button class="pick-btn" onclick="selectMain(this, 'mr-brightside-alt', 'Keys')">Pick Me</button><button class="reserve-btn" onclick="selectReserve(this, 'mr-brightside-alt', 'Keys')">Reserve Me</button></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- 🔄 CARRIED FORWARD -->
+<div class="song-card" data-song="teenage-kicks">
+  <div class="song-header" onclick="toggleOnly(this)">
+    <span class="status-icon status-roll">🔄</span>
+    <div class="song-meta"><span class="song-name">Teenage Kicks</span><span class="song-artist">The Undertones</span></div>
+    <span class="chevron">▼</span>
+  </div>
+  <div class="song-details">
+    <div class="details-inner">
+      <div class="info-grid"><div class="info-row"><span class="label">Length / BPM / Key</span><span class="value">2:27 • 168 • G</span></div></div>
+      <div class="divider"></div>
+      <div class="part-row"><span class="part-name">Lead Vocals</span><span class="part-value open-slot">OPEN</span><div class="btn-group"><button class="pick-btn" onclick="selectMain(this, 'teenage-kicks', 'Lead Vocals')">Pick Me</button><button class="reserve-btn" onclick="selectReserve(this, 'teenage-kicks', 'Lead Vocals')">Reserve Me</button></div></div>
+      <div class="part-row"><span class="part-name">Lead Guitar</span><span class="part-value open-slot">OPEN</span><div class="btn-group"><button class="pick-btn" onclick="selectMain(this, 'teenage-kicks', 'Lead Guitar')">Pick Me</button><button class="reserve-btn" onclick="selectReserve(this, 'teenage-kicks', 'Lead Guitar')">Reserve Me</button></div></div>
+      <div class="part-row"><span class="part-name">Bass</span><span class="part-value open-slot">OPEN</span><div class="btn-group"><button class="pick-btn" onclick="selectMain(this, 'teenage-kicks', 'Bass')">Pick Me</button><button class="reserve-btn" onclick="selectReserve(this, 'teenage-kicks', 'Bass')">Reserve Me</button></div></div>
+      <div class="part-row"><span class="part-name">Drums</span><span class="part-value open-slot">OPEN</span><div class="btn-group"><button class="pick-btn" onclick="selectMain(this, 'teenage-kicks', 'Drums')">Pick Me</button><button class="reserve-btn" onclick="selectReserve(this, 'teenage-kicks', 'Drums')">Reserve Me</button></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="song-card" data-song="wonderwall">
+  <div class="song-header" onclick="toggleOnly(this)">
+    <span class="status-icon status-roll">🔄</span>
+    <div class="song-meta"><span class="song-name">Wonderwall</span><span class="song-artist">Oasis</span></div>
+    <span class="chevron">▼</span>
+  </div>
+  <div class="song-details">
+    <div class="details-inner">
+      <div class="info-grid"><div class="info-row"><span class="label">Length / BPM / Key</span><span class="value">4:18 • 87 • Em</span></div></div>
+      <div class="divider"></div>
+      <div class="part-row"><span class="part-name">Lead Vocals</span><span class="part-value">Liam S</span><div class="btn-group"><button class="pick-btn" disabled>Taken</button><button class="reserve-btn" disabled>Taken</button></div></div>
+      <div class="part-row"><span class="part-name">Acoustic Guitar</span><span class="part-value open-slot">OPEN</span><div class="btn-group"><button class="pick-btn" onclick="selectMain(this, 'wonderwall', 'Acoustic Guitar')">Pick Me</button><button class="reserve-btn" onclick="selectReserve(this, 'wonderwall', 'Acoustic Guitar')">Reserve Me</button></div></div>
+      <div class="part-row"><span class="part-name">Electric Guitar</span><span class="part-value open-slot">OPEN</span><div class="btn-group"><button class="pick-btn" onclick="selectMain(this, 'wonderwall', 'Electric Guitar')">Pick Me</button><button class="reserve-btn" onclick="selectReserve(this, 'wonderwall', 'Electric Guitar')">Reserve Me</button></div></div>
+      <div class="part-row"><span class="part-name">Bass</span><span class="part-value">Paul M</span><div class="btn-group"><button class="pick-btn" disabled>Taken</button><button class="reserve-btn" onclick="selectReserve(this, 'wonderwall', 'Bass')">Reserve Me</button></div></div>
+      <div class="part-row"><span class="part-name">Drums</span><span class="part-value open-slot">OPEN</span><div class="btn-group"><button class="pick-btn" onclick="selectMain(this, 'wonderwall', 'Drums')">Pick Me</button><button class="reserve-btn" onclick="selectReserve(this, 'wonderwall', 'Drums')">Reserve Me</button></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="song-card" data-song="seven-nation">
+  <div class="song-header" onclick="toggleOnly(this)">
+    <span class="status-icon status-roll">🔄</span>
+    <div class="song-meta"><span class="song-name">Seven Nation Army</span><span class="song-artist">The White Stripes</span></div>
+    <span class="chevron">▼</span>
+  </div>
+  <div class="song-details">
+    <div class="details-inner">
+      <div class="info-grid"><div class="info-row"><span class="label">Length / BPM / Key</span><span class="value">3:52 • 124 • E</span></div></div>
+      <div class="divider"></div>
+      <div class="part-row"><span class="part-name">Vocals / Guitar</span><span class="part-value open-slot">OPEN</span><div class="btn-group"><button class="pick-btn" onclick="selectMain(this, 'seven-nation', 'Vocals / Guitar')">Pick Me</button><button class="reserve-btn" onclick="selectReserve(this, 'seven-nation', 'Vocals / Guitar')">Reserve Me</button></div></div>
+      <div class="part-row"><span class="part-name">Bass</span><span class="part-value open-slot">OPEN</span><div class="btn-group"><button class="pick-btn" onclick="selectMain(this, 'seven-nation', 'Bass')">Pick Me</button><button class="reserve-btn" onclick="selectReserve(this, 'seven-nation', 'Bass')">Reserve Me</button></div></div>
+      <div class="part-row"><span class="part-name">Drums</span><span class="part-value open-slot">OPEN</span><div class="btn-group"><button class="pick-btn" onclick="selectMain(this, 'seven-nation', 'Drums')">Pick Me</button><button class="reserve-btn" onclick="selectReserve(this, 'seven-nation', 'Drums')">Reserve Me</button></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- 🟡 NEW SUGGESTIONS -->
+<div class="song-card" data-song="dakota">
+  <div class="song-header" onclick="toggleOnly(this)">
+    <span class="status-icon status-sugg">🟡</span>
+    <div class="song-meta"><span class="song-name">Dakota</span><span class="song-artist">Stereophonics</span></div>
+    <span class="chevron">▼</span>
+  </div>
+  <div class="song-details">
+    <div class="details-inner">
+      <div class="info-grid"><div class="info-row"><span class="label">Length / BPM / Key</span><span class="value">4:57 • 138 • G</span></div></div>
+      <div class="divider"></div>
+      <div class="part-row"><span class="part-name">All parts</span><span class="part-value open-slot">Awaiting interest</span><div class="btn-group"><button class="pick-btn" onclick="selectMain(this, 'dakota', 'Any part')">Pick Me</button><button class="reserve-btn" onclick="selectReserve(this, 'dakota', 'Any part')">Reserve Me</button></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="song-card" data-song="chelsea-dagger">
+  <div class="song-header" onclick="toggleOnly(this)">
+    <span class="status-icon status-sugg">🟡</span>
+    <div class="song-meta"><span class="song-name">Chelsea Dagger</span><span class="song-artist">The Fratellis</span></div>
+    <span class="chevron">▼</span>
+  </div>
+  <div class="song-details">
+    <div class="details-inner">
+      <div class="info-grid"><div class="info-row"><span class="label">Length / BPM / Key</span><span class="value">3:24 • 146 • A</span></div></div>
+      <div class="divider"></div>
+      <div class="part-row"><span class="part-name">All parts</span><span class="part-value open-slot">Awaiting interest</span><div class="btn-group"><button class="pick-btn" onclick="selectMain(this, 'chelsea-dagger', 'Any part')">Pick Me</button><button class="reserve-btn" onclick="selectReserve(this, 'chelsea-dagger', 'Any part')">Reserve Me</button></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="song-card" data-song="dancefloor">
+  <div class="song-header" onclick="toggleOnly(this)">
+    <span class="status-icon status-sugg">🟡</span>
+    <div class="song-meta"><span class="song-name">I Bet You Look Good On The Dancefloor</span><span class="song-artist">Arctic Monkeys</span></div>
+    <span class="chevron">▼</span>
+  </div>
+  <div class="song-details">
+    <div class="details-inner">
+      <div class="info-grid"><div class="info-row"><span class="label">Length / BPM / Key</span><span class="value">2:54 • 138 • A</span></div></div>
+      <div class="divider"></div>
+      <div class="part-row"><span class="part-name">All parts</span><span class="part-value open-slot">Awaiting interest</span><div class="btn-group"><button class="pick-btn" onclick="selectMain(this, 'dancefloor', 'Any part')">Pick Me</button><button class="reserve-btn" onclick="selectReserve(this, 'dancefloor', 'Any part')">Reserve Me</button></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- 📋 ICON KEY, RULES & INFO -->
+<div class="info-section">
+  <h3>📋 Icon Key</h3>
+  <div class="icon-key">
+    <div class="key-item"><span>✅</span> All parts confirmed / full</div>
+    <div class="key-item"><span>⚠️</span> Open slots available</div>
+    <div class="key-item"><span>🔄</span> Carried forward from previous</div>
+    <div class="key-item"><span>🟡</span> New suggestion / awaiting interest</div>
+    <div class="key-item"><span>🧍</span> You are signed up for this song</div>
+    <div class="key-item"><span>🛡️</span> You are reserve for this song</div>
+  </div>
+
+  <h3>📖 How It Works</h3>
+  <ul class="how-to-list">
+    <li>Tap any song header to open/close its details</li>
+    <li><strong>Pick Me (orange):</strong> select as your MAIN playing part</li>
+    <li><strong>Reserve Me (purple):</strong> select as backup if main player can’t make it</li>
+    <li>When selected: button turns green → click <strong>Unselect</strong> to cancel</li>
+    <li>Buttons are greyed out if already taken or limits reached</li>
+  </ul>
+
+  <h3>⚠️ Selection Rules</h3>
+  <ul class="rules-list">
+    <li><strong>Main parts:</strong> Max <strong>2 songs total</strong> – only <strong>1 part per song</strong></li>
+    <li><strong>Reserve parts:</strong> Only <strong>1 reserve per song</strong> – no fixed total limit</li>
+    <li>You <strong>cannot</strong> be both Main AND Reserve on the same song</li>
+    <li>Deadline: all selections must be made by <strong>Tuesday 8 September, 8:00pm</strong></li>
+    <li>Setlist & running order will be confirmed after the deadline closes</li>
+  </ul>
+</div>
+
+<script>
+let mainPicks = [];
+let reservePicks = [];
+const MAX_MAIN = 2;
+const mainSummary = document.getElementById('mainSummary');
+const reserveSummary = document.getElementById('reserveSummary');
+
+function updateSummaries() {
+  mainSummary.textContent = `Main picks: ${mainPicks.length} / ${MAX_MAIN} songs max (1 part per song)`;
+  reserveSummary.textContent = `Reserve picks: ${reservePicks.length} selected (1 reserve per song)`;
+}
+
+function updateAllButtons() {
+  document.querySelectorAll('.pick-btn:not([disabled]):not(.selected)').forEach(btn => {
+    const songId = btn.closest('.song-card').dataset.song;
+    btn.disabled = mainPicks.length >= MAX_MAIN || mainPicks.some(p => p.song === songId);
+  });
+  document.querySelectorAll('.reserve-btn:not([disabled]):not(.selected)').forEach(btn => {
+    const songId = btn.closest('.song-card').dataset.song;
+    btn.disabled = reservePicks.some(p => p.song === songId);
+  });
+}
+
+function selectMain(btn, songId, partName) {
+  const card = btn.closest('.song-card');
+  const songName = card.querySelector('.song-name').textContent;
+  const valCell = btn.closest('.part-row').querySelector('.part-value');
+
+  if (btn.classList.contains('selected')) {
+    btn.classList.remove('selected');
+    btn.textContent = 'Pick Me';
+    mainPicks = mainPicks.filter(p => !(p.song === songId && p.part === partName));
+    valCell.textContent = 'OPEN';
+  } else {
+    if (mainPicks.length >= MAX_MAIN) return alert(`Maximum ${MAX_MAIN} main parts total – unselect one first`);
+    if (mainPicks.some(p => p.song === songId)) return alert('Only one main part per song allowed');
+    if (reservePicks.some(p => p.song === songId)) return alert('You are already reserve for this song – unselect first');
+    btn.classList.add('selected');
+    btn.textContent = 'Unselect';
+    mainPicks.push({ song: songId, songName, part: partName });
+    valCell.textContent = 'YOU';
+  }
+  updateSummaries();
+  updateAllButtons();
+}
+
+function selectReserve(btn, songId, partName) {
+  const card = btn.closest('.song-card');
+  const songName = card.querySelector('.song-name').textContent;
+  const valCell = btn.closest('.part-row').querySelector('.part-value');
+
+  if (btn.classList.contains('selected')) {
+    btn.classList.remove('selected');
+    btn.textContent = 'Reserve Me';
+    reservePicks = reservePicks.filter(p => !(p.song === songId && p.part === partName));
+    if (valCell.textContent.includes('(Reserve)')) valCell.textContent = valCell.textContent.replace(' + YOU (Reserve)', '').replace('YOU (Reserve)', 'OPEN');
+  } else {
+    if (reservePicks.some(p => p.song === songId)) return alert('Only one reserve per song allowed');
+    if (mainPicks.some(p => p.song === songId)) return alert('You are already main for this song – unselect first');
+    btn.classList.add('selected');
+    btn.textContent = 'Unselect';
+    reservePicks.push({ song: songId, songName, part: partName });
+    valCell.textContent = valCell.textContent === 'OPEN' ? 'YOU (Reserve)' : valCell.textContent + ' + YOU (Reserve)';
+  }
+  updateSummaries();
+  updateAllButtons();
+}
+
+function toggleOnly(header) {
+  const card = header.closest('.song-card');
+  document.querySelectorAll('.song-card').forEach(c => c.classList.remove('open'));
+  card.classList.add('open');
+}
+</script>
+
+</body>
+</html>
