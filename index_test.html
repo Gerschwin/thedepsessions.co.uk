@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The Dep Sessions</title>
+  <meta name="description" content="The Dep Sessions — Connect, rehearse and perform live with a proper band for the night. Register interest for our launch.">
+  <meta property="og:title" content="The Dep Sessions">
+  <meta property="og:description" content="Connect · Rehearse · Perform — sign up to be notified about our launch.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?auto=format&fit=crop&w=1200&q=80">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg: #121212;
+      --panel: #1E1E1E;
+      --card: #252525;
+      --muted: #E2E2E2;
+      --accent: #E04A3F;
+      --accent-2: #F5C543;
+      --radius: 8px;
+      --gap: 16px;
+      --max-width: 1200px;
+    }
+
+    /* Reset-ish */
+    *,*::before,*::after{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      font-family: 'Inter', sans-serif;
+      background:var(--bg);
+      color:var(--muted);
+      line-height:1.4;
+      margin:0;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+    h1,h2,h3{font-family:'Oswald',sans-serif;color:#F8F9FA;margin:0;line-height:1.1}
+
+    a{color:inherit}
+
+    /* Layout */
+    .container{max-width:var(--max-width);margin:0 auto;padding:0 16px}
+
+    header.hero{
+      background: linear-gradient(rgba(18,18,18,0.85), rgba(18,18,18,0.85)), url('https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?auto=format&fit=crop&w=1920&q=80') center/cover no-repeat;
+      padding:60px 16px;text-align:center;
+    }
+    .hero-logo{max-width:200px;width:100%;height:auto;margin:0 auto 8px;display:block}
+    .hero h1{font-size:clamp(2.5rem,8vw,4.5rem);margin-bottom:8px}
+    .hero-tagline{font-size:clamp(1.2rem,4vw,1.9rem);color:var(--accent-2);margin-bottom:12px;font-weight:500}
+    .launch-badge{display:inline-block;background:var(--accent-2);color:#121212;padding:8px 24px;font-size:clamp(0.95rem,3vw,1.1rem);font-weight:600;border-radius:4px;margin-bottom:18px}
+
+    .hero-buttons{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:8px}
+    .btn{flex:0 1 auto;min-width:160px;padding:12px 24px;font-size:1rem;font-weight:500;border-radius:4px;border:2px solid var(--accent);text-decoration:none;display:inline-flex;align-items:center;justify-content:center;transition:all .2s ease;color:#F8F9FA;background:var(--accent)}
+    .btn-outline{background:transparent;color:#F8F9FA}
+    .btn:hover{background:var(--accent-2);border-color:var(--accent-2);color:#121212}
+
+    /* About */
+    section.about-snippet{background:var(--panel);padding:28px 16px;text-align:center}
+    .about-snippet p{max-width:700px;margin:0 auto;font-size:clamp(1rem,3vw,1.125rem);line-height:1.5}
+
+    /* How it works */
+    section.how-it-works{background:var(--bg);padding:48px 16px 60px}
+    .hiw-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;max-width:var(--max-width);margin:0 auto}
+    .hiw-card{background:var(--card);padding:28px 20px;border-radius:8px;text-align:center}
+    .hiw-icon{font-size:42px;color:var(--accent);margin-bottom:12px}
+    .hiw-card h3{font-size:clamp(1.4rem,5vw,1.75rem);margin-bottom:8px}
+
+    /* Footer */
+    footer.page-footer{background:var(--bg);padding:32px 16px;text-align:center;border-top:1px solid #333}
+    .social-links{margin:16px 0 8px;display:flex;gap:12px;justify-content:center}
+    .social-link{color:#F8F9FA;font-size:22px;width:38px;height:38px;display:inline-flex;align-items:center;justify-content:center;border:2px solid var(--accent);border-radius:50%;text-decoration:none;transition:all .2s ease}
+    .social-link:hover{background:var(--accent-2);border-color:var(--accent-2);color:#121212}
+    .footer-links{margin-top:12px;font-size:0.875rem}
+    .footer-links a,.footer-links button{color:var(--muted);margin:0 6px;text-decoration:none;background:none;border:0;padding:0;font:inherit;cursor:pointer}
+    .footer-links button{color:var(--muted)}
+    .footer-links a:hover,.footer-links button:hover{color:var(--accent-2)}
+
+    /* Modal */
+    .modal-backdrop{position:fixed;inset:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:none;align-items:center;justify-content:center;padding:16px;z-index:9999}
+    .modal-backdrop.active{display:flex}
+    .modal-box{background:var(--panel);max-width:600px;width:100%;max-height:85vh;overflow:auto;padding:28px 20px;border-radius:8px;border:1px solid #333;position:relative}
+    .modal-close{position:absolute;top:12px;right:16px;font-size:24px;color:var(--muted);background:none;border:0;cursor:pointer}
+    .modal-close:hover{color:var(--accent-2)}
+    .modal-box h2{color:#F8F9FA;margin-bottom:12px;font-size:1.5rem}
+    .modal-box p,.modal-box ul{margin-bottom:10px;font-size:0.9375rem}
+    .modal-box ul{margin-left:20px}
+    .modal-box a{color:var(--accent-2);text-decoration:none}
+    .modal-box a:hover{text-decoration:underline}
+
+    /* Utility */
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+    @media (max-width:600px){
+      header.hero{padding:48px 12px}
+      .hero-logo{max-width:180px;margin-bottom:0}
+      .hero h1{font-size:2.25rem}
+      .hero-tagline{font-size:1.25rem}
+      .hero-buttons{flex-direction:column;align-items:center;gap:10px}
+      .btn{width:100%;max-width:280px}
+      section.about-snippet{padding:24px 12px}
+      section.how-it-works{padding:40px 12px 48px}
+      .hiw-grid{gap:20px}
+    }
+
+    /* Firefox line-height match */
+    @supports (-moz-appearance:none){*{line-height:1.4}h1,h2,h3{line-height:1.1}}
+  </style>
+</head>
+<body>
+
+  <header class="hero" role="banner">
+    <div class="container">
+      <img src="logo-transparent.png" alt="The Dep Sessions logo" class="hero-logo">
+      <h1>The Dep Sessions</h1>
+      <div class="hero-tagline">Connect · Rehearse · Perform</div>
+      <div class="launch-badge">Launching Soon</div>
+      <div class="hero-buttons" role="navigation" aria-label="Primary actions">
+        <a href="https://survey.thedepsessions.co.uk" target="_blank" rel="noopener noreferrer" class="btn">Register Interest</a>
+        <a href="#about-desc" class="btn btn-outline">How It Will Work</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="about-snippet" id="about-desc">
+      <div class="container">
+        <p>Pick a song, join the rest of the band and perform live — no open mic, no random jams, just a proper band for the night.</p>
+      </div>
+    </section>
+
+    <section class="how-it-works">
+      <div class="container hiw-grid" aria-label="How it works">
+        <div class="hiw-card">
+          <div class="hiw-icon" aria-hidden="true">🎸</div>
+          <h3>Pick Your Song</h3>
+          <p>Browse songs already lined up, choose the one you want to play and sign up for your part.</p>
+        </div>
+        <div class="hiw-card">
+          <div class="hiw-icon" aria-hidden="true">🤝</div>
+          <h3>Connect & Prepare</h3>
+          <p>We connect you with the rest of the band for that song. Learn your part in your own time, ready for performance night.</p>
+        </div>
+        <div class="hiw-card">
+          <div class="hiw-icon" aria-hidden="true">🎤</div>
+          <h3>Perform As A Band</h3>
+          <p>Come together and play live as a complete group — just for that night.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="page-footer" role="contentinfo">
+    <div class="container">
+      <div class="social-links" aria-hidden="false">
+        <a href="https://www.facebook.com/profile.php?id=61592674140778" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="Facebook"><span aria-hidden="true">f</span><span class="sr-only">Facebook</span></a>
+        <a href="https://survey.thedepsessions.co.uk" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="Instagram"><span aria-hidden="true">i</span><span class="sr-only">Instagram</span></a>
+        <a href="https://survey.thedepsessions.co.uk" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="YouTube"><span aria-hidden="true">y</span><span class="sr-only">YouTube</span></a>
+      </div>
+
+      <p style="font-size:0.875rem;color:var(--accent-2);margin-bottom:10px">Social pages coming soon</p>
+
+      <div class="footer-links">
+        <a href="mailto:thedepsessionsscotland@gmail.com">Contact</a>
+        <button id="privacy-link" type="button" aria-haspopup="dialog" aria-controls="privacy-modal">Privacy</button>
+      </div>
+
+      <p style="margin-top:12px;font-size:0.8125rem">&copy; 2026 The Dep Sessions. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Accessible modal: initially hidden (aria-hidden="true") -->
+  <div id="privacy-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="privacy-title" aria-hidden="true">
+    <div class="modal-box" role="document">
+      <button class="modal-close" aria-label="Close privacy policy">&times;</button>
+      <h2 id="privacy-title">Privacy Policy</h2>
+      <p><strong>The Dep Sessions</strong> respects your privacy. This notice explains how we use any information you share with us.</p>
+      <p><strong>What we collect:</strong> We only collect what you provide — typically your name and email address, and optionally your instrument or location if you choose to share them.</p>
+      <p><strong>How we use it:</strong> We use your details only to keep you updated about our launch and progress, to manage registrations and to reply to any messages you send us.</p>
+      <p>We will <strong>never</strong> sell, share, or pass your details to anyone else. We only share personal details with third parties where required by law, or if you explicitly ask us to (for example, to facilitate an event), and only with your informed consent.</p>
+      <p><strong>Storage & security:</strong> Your data is stored securely and only accessed by people running The Dep Sessions. We use reasonable technical and organisational measures to protect your information.</p>
+      <p><strong>Your rights:</strong> You can ask us to remove your details at any time — just email us at <a href="mailto:thedepsessionsscotland@gmail.com">thedepsessionsscotland@gmail.com</a>. You may also request a copy of the information we hold about you.</p>
+      <p style="margin-top:12px">Last updated: August 2026</p>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const openBtn = document.getElementById('privacy-link');
+      const modal = document.getElementById('privacy-modal');
+      const closeBtn = modal ? modal.querySelector('.modal-close') : null;
+      let lastFocused = null;
+
+      function getFocusable(el){
+        if(!el) return [];
+        return Array.from(el.querySelectorAll('a[href],button:not([disabled]),textarea, input, select, [tabindex]:not([tabindex="-1"])')).filter(e=>e.offsetParent!==null);
+      }
+
+      function openModal(){
+        if(!modal) return;
+        lastFocused = document.activeElement;
+        modal.setAttribute('aria-hidden','false');
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        const focusable = getFocusable(modal);
+        (focusable[0] || closeBtn || modal).focus();
+        document.addEventListener('keydown', onKeyDown);
+      }
+
+      function closeModal(){
+        if(!modal) return;
+        modal.setAttribute('aria-hidden','true');
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+        if(lastFocused) lastFocused.focus();
+        document.removeEventListener('keydown', onKeyDown);
+      }
+
+      function onKeyDown(e){
+        if(e.key === 'Escape'){
+          closeModal();
+          return;
+        }
+        if(e.key === 'Tab'){
+          // simple focus trap
+          const focusable = getFocusable(modal);
+          if(focusable.length === 0){
+            e.preventDefault();
+            return;
+          }
+          const first = focusable[0];
+          const last = focusable[focusable.length -1];
+          if(e.shiftKey && document.activeElement === first){
+            e.preventDefault(); last.focus();
+          } else if(!e.shiftKey && document.activeElement === last){
+            e.preventDefault(); first.focus();
+          }
+        }
+      }
+
+      if(openBtn) openBtn.addEventListener('click', openModal);
+      if(closeBtn) closeBtn.addEventListener('click', closeModal);
+      if(modal) modal.addEventListener('click', function(e){ if(e.target === modal) closeModal(); });
+
+      // graceful degradation: ensure script doesn't throw if elements absent
+    })();
+  </script>
+
+</body>
+</html>
