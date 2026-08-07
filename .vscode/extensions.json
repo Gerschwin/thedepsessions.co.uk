@@ -1,0 +1,9 @@
+{"recommendations": [
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "dsznajder.es7-react-js-snippets",
+    "ES7+ React/Redux/React-Native snippets": "dsznajder.es7-react-js-snippets",
+    "Error Lens": "eamodio.errorlens",
+    "mantine": "mantinedev.mantine"
+  ]
+}
