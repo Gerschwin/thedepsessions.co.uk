@@ -1,0 +1,10 @@
+/* Global styles used by the scaffolded app. Keep small so your static styles in public/styles.css remain available. */
+:root{
+  --bg:#fff;
+  --text:#111;
+}
+html,body,#__next{height:100%}
+body{margin:0;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;color:var(--text);background:var(--bg)}
+main{max-width:900px;margin:48px auto;padding:0 16px}
+input{display:block;margin-top:8px;padding:8px 10px}
+button{margin-top:12px;padding:8px 12px}
